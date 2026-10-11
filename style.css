@@ -141,3 +141,81 @@ textarea:focus {
     color: #166534;
     font-size: 15px;
 }
+
+.issue-card {
+    background: white;
+    padding: 20px;
+    margin-top: 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    overflow-wrap: anywhere;
+}
+
+.issue-card h3 {
+    color: #2563eb;
+    margin-bottom: 12px;
+}
+
+.issue-card p {
+    font-size: 15px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.issue-card label {
+    margin-top: 12px;
+}
+
+.issue-card select {
+    display: block;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.dashboard {
+    margin-top: 30px;
+}
+
+.dashboard > h2,
+.issue-list > h2 {
+    margin-bottom: 16px;
+    color: #1e293b;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.summary-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.summary-card h3 {
+    font-size: 28px;
+    color: #2563eb;
+    margin-bottom: 8px;
+}
+
+.summary-card p {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.issue-list {
+    margin-top: 30px;
+}
+
+@media (max-width: 400px) {
+    .summary-card {
+        padding: 14px;
+    }
+
+    .summary-card h3 {
+        font-size: 23px;
+    }
+}
