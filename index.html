@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusFix | Campus Issue Reporting</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="container">
+        <h1>CampusFix</h1>
+        <p class="subtitle">Report campus problems. Help make things better.</p>
+
+        <section class="form-card">
+            <h2>Report an Issue</h2>
+            <p class="description">
+                Tell us about a problem that needs attention on campus.
+            </p>
+
+            <form id="issueForm">
+                <label for="title">Issue Title</label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    placeholder="e.g. Broken classroom fan"
+                    required
+                >
+
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="">Select a category</option>
+                    <option value="electricity">Electricity</option>
+                    <option value="water">Water Supply</option>
+                    <option value="cleanliness">Cleanliness</option>
+                    <option value="classroom">Classroom Maintenance</option>
+                    <option value="other">Other</option>
+                </select>
+
+                <label for="location">Location on Campus</label>
+                <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    placeholder="e.g. Block A, Room 204"
+                    required
+                >
+
+                <label for="description">Describe the Issue</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    placeholder="Explain what happened..."
+                    required
+                ></textarea>
+
+                <button type="submit">Submit Issue</button>
+            </form>
+            
+<div id="issueResult" aria-live="polite"></div>
+
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+</html>
