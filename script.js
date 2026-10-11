@@ -1,4 +1,7 @@
 
+
+const API_URL = "http://localhost:3000/api/issues";
+
 const issueForm = document.getElementById("issueForm");
 const issueResult = document.getElementById("issueResult");
 
@@ -10,67 +13,36 @@ const issueList = document.createElement("section");
 issueList.className = "issue-list";
 dashboard.after(issueList);
 
-let issues = JSON.parse(
-    localStorage.getItem("campusFixIssues") || "[]"
-);
+let issues = [];
 
-// Add IDs and timestamps to older reports if they don't have them.
-issues.forEach(function (issue) {
-    if (!issue.id) {
-        issue.id = "CF-" + Date.now() + "-" +
-            Math.random().toString(36).slice(2, 7);
-    }
-
-    if (!issue.createdAt) {
-        issue.createdAt = new Date().toISOString();
-    }
-
-    if (!issue.status) {
-        issue.status = "Pending";
-    }
-});
-
-function saveIssues() {
-    localStorage.setItem("campusFixIssues", JSON.stringify(issues));
+function createTextElement(tag, text) {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    return element;
 }
 
 function displayDashboard() {
     dashboard.replaceChildren();
 
-    const heading = document.createElement("h2");
-    heading.textContent = "Issue Dashboard";
-    dashboard.appendChild(heading);
+    dashboard.appendChild(createTextElement("h2", "Issue Dashboard"));
 
     const summary = document.createElement("div");
     summary.className = "summary-grid";
 
     const counts = [
-        { label: "Total Issues", value: issues.length },
-        {
-            label: "Pending",
-            value: issues.filter(issue => issue.status === "Pending").length
-        },
-        {
-            label: "In Progress",
-            value: issues.filter(issue => issue.status === "In Progress").length
-        },
-        {
-            label: "Resolved",
-            value: issues.filter(issue => issue.status === "Resolved").length
-        }
+        ["Total Issues", issues.length],
+        ["Pending", issues.filter(i => i.status === "Pending").length],
+        ["In Progress", issues.filter(i => i.status === "In Progress").length],
+        ["Resolved", issues.filter(i => i.status === "Resolved").length]
     ];
 
-    counts.forEach(function (item) {
+    counts.forEach(function ([label, count]) {
         const card = document.createElement("div");
         card.className = "summary-card";
-
-        const number = document.createElement("h3");
-        number.textContent = item.value;
-
-        const label = document.createElement("p");
-        label.textContent = item.label;
-
-        card.append(number, label);
+        card.append(
+            createTextElement("h3", count),
+            createTextElement("p", label)
+        );
         summary.appendChild(card);
     });
 
@@ -79,74 +51,54 @@ function displayDashboard() {
 
 function displayIssues() {
     issueList.replaceChildren();
-
-    const heading = document.createElement("h2");
-    heading.textContent = "Reported Issues";
-    issueList.appendChild(heading);
+    issueList.appendChild(createTextElement("h2", "Reported Issues"));
 
     if (issues.length === 0) {
-        const message = document.createElement("p");
-        message.textContent = "No issues reported yet.";
-        issueList.appendChild(message);
+        issueList.appendChild(
+            createTextElement("p", "No issues reported yet.")
+        );
         return;
     }
 
-    issues.forEach(function (issue, index) {
+    issues.forEach(function (issue) {
         const card = document.createElement("article");
         card.className = "issue-card";
 
-        const title = document.createElement("h3");
-        title.textContent = issue.title;
-
-        const id = document.createElement("p");
-        id.textContent = "Issue ID: " + issue.id;
-
-        const category = document.createElement("p");
-        category.textContent = "Category: " + issue.category;
-
-        const location = document.createElement("p");
-        location.textContent = "Location: " + issue.location;
-
-        const description = document.createElement("p");
-        description.textContent = "Description: " + issue.description;
-
-        const date = document.createElement("p");
-        date.textContent = "Reported: " +
-            new Date(issue.createdAt).toLocaleString();
-
-        const statusLabel = document.createElement("label");
-        statusLabel.textContent = "Status: ";
-
-        const statusSelect = document.createElement("select");
-        statusSelect.setAttribute("aria-label", "Status for " + issue.title);
-
-        ["Pending", "In Progress", "Resolved"].forEach(function (status) {
-            const option = document.createElement("option");
-            option.value = status;
-            option.textContent = status;
-            statusSelect.appendChild(option);
-        });
-
-        statusSelect.value = issue.status;
-
-        statusSelect.addEventListener("change", function () {
-            issues[index].status = statusSelect.value;
-            saveIssues();
-            displayDashboard();
-            displayIssues();
-        });
-
-        statusLabel.appendChild(statusSelect);
-
         card.append(
-            title, id, category, location, description, date, statusLabel
+            createTextElement("h3", issue.title),
+            createTextElement("p", "Issue ID: " + issue.id),
+            createTextElement("p", "Category: " + issue.category),
+            createTextElement("p", "Location: " + issue.location),
+            createTextElement("p", "Description: " + issue.description),
+            createTextElement(
+                "p",
+                "Reported: " + new Date(issue.createdAt).toLocaleString()
+            ),
+            createTextElement("p", "Status: " + issue.status)
         );
 
         issueList.appendChild(card);
     });
 }
 
-issueForm.addEventListener("submit", function (event) {
+async function loadIssues() {
+    try {
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("Could not load issues.");
+        }
+
+        issues = await response.json();
+        displayDashboard();
+        displayIssues();
+    } catch (error) {
+        issueResult.textContent =
+            "Unable to load issues. Check that the backend is running.";
+    }
+}
+
+issueForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const title = document.getElementById("title").value.trim();
@@ -159,28 +111,42 @@ issueForm.addEventListener("submit", function (event) {
         return;
     }
 
-    const newIssue = {
-        id: "CF-" + Date.now(),
-        title: title,
-        category: category,
-        location: location,
-        description: description,
-        status: "Pending",
-        createdAt: new Date().toISOString()
-    };
+    const submitButton = issueForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    issueResult.textContent = "Submitting issue...";
 
-    issues.unshift(newIssue);
-    saveIssues();
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title,
+                category,
+                location,
+                description
+            })
+        });
 
-    issueResult.textContent = "Issue submitted successfully!";
-    issueForm.reset();
+        const data = await response.json();
 
-    displayDashboard();
-    displayIssues();
+        if (!response.ok) {
+            throw new Error(data.message || "Unable to submit issue.");
+        }
+
+        issueResult.textContent = "Issue submitted successfully!";
+        issueForm.reset();
+
+        await loadIssues();
+    } catch (error) {
+        issueResult.textContent =
+            error.message === "Failed to fetch"
+                ? "Cannot reach the backend. Make sure the server is running."
+                : error.message;
+    } finally {
+        submitButton.disabled = false;
+    }
 });
 
-saveIssues();
-displayDashboard();
-displayIssues();
-
-
+loadIssues();
